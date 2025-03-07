@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeORM.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './apis/user/user.module';
+import { AuthModule } from './apis/auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserModule } from './apis/user/user.module';
       useFactory: typeORMConfig,
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
