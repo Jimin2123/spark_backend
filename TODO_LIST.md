@@ -24,4 +24,10 @@ npm i --save helmet
 
 # Rate Limiting 기능을 제공
 npm i --save @nestjs/throttler
+
+# Database
+npm install --save @nestjs/typeorm typeorm mysql2
+
+# ENV
+npm install --save-dev cross-env
 ```
