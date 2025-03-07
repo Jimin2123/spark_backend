@@ -1,10 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/entities/dtos/user.dto';
 import { LocalAccount } from 'src/entities/local-account.entity';
 import { User } from 'src/entities/user.entity';
 import { hashPassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -13,8 +14,14 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(LocalAccount)
     private readonly localAccountRepository: Repository<LocalAccount>,
+    private readonly authService: AuthService,
   ) {}
 
+  /**
+   * 사용자를 생성하고 로그인 합니다.
+   * @param createUserDto 사용자 생성 정보
+   * @returns
+   */
   async createUser(createUserDto: CreateUserDto) {
     const { email, username, password } = createUserDto;
 
@@ -41,6 +48,26 @@ export class UserService {
       password: hashedPassword,
       user: savedUser,
     });
-    return this.localAccountRepository.save(createdLocalAccount);
+    await this.localAccountRepository.save(createdLocalAccount);
+
+    return this.authService.login({ email, password });
+  }
+
+  /**
+   * 사용자 ID로 사용자를 찾습니다.
+   * @param uid 사용자 ID
+   * @param role 사용자 역할
+   * @returns 사용자 정보
+   */
+  async findUserById(uid: string, role?: string) {
+    const user = await this.userRepository.findOne({
+      where: { uid },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 }
