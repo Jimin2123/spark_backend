@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeORM.config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { UserModule } from './apis/user/user.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
       inject: [ConfigService],
       useFactory: typeORMConfig,
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
