@@ -1,6 +1,8 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { LocalAccount } from './local-account.entity';
+import { RefreshToken } from './refresh-token.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -33,4 +35,10 @@ export class User extends BaseEntity {
 
   @Column({ default: 'default-icon' })
   profileImage?: string;
+
+  @OneToOne(() => LocalAccount, (localAccount) => localAccount.user, { cascade: true })
+  localAccount: LocalAccount;
+
+  @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, { cascade: true })
+  refreshToken: RefreshToken;
 }
