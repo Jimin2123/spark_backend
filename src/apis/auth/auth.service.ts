@@ -51,13 +51,13 @@ export class AuthService {
    */
   private async generateTokens(user: User): Promise<Tokens> {
     try {
-      // 1. 토큰에 포함할 페이로드 생성
+      // 토큰에 포함할 페이로드 생성
       const tokenPayload: TokenPayload = { sub: user.uid, role: user.role };
 
-      // 2. 새로운 액세스 토큰 생성
+      // 새로운 액세스 토큰 생성
       const accessToken = this.tokenService.generateAccessToken(tokenPayload);
 
-      // 3. 새로운 리프레시 토큰 생성 또는 기존 토큰 갱신
+      // 새로운 리프레시 토큰 생성 또는 기존 토큰 갱신
       const refreshToken = await this.createOrUpdateRefreshToken(user, tokenPayload);
 
       return { accessToken, refreshToken };
@@ -74,24 +74,18 @@ export class AuthService {
    * @returns 새로 생성된 리프레시 토큰
    */
   private async createOrUpdateRefreshToken(user: User, payload: TokenPayload): Promise<string> {
-    const existingToken = await this.refreshTokenRepository.findOne({
-      where: { user },
-    });
-
-    if (existingToken && new Date(existingToken.expiresAt) > new Date()) {
-      return existingToken.token;
-    }
-
     const newRefreshToken = this.tokenService.generateRefreshToken(payload);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일 후 만료
 
-    if (existingToken) await this.refreshTokenRepository.remove(existingToken);
-
-    const createdRefreshToken = this.refreshTokenRepository.create({
-      user,
-      token: newRefreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일 후 만료
-    });
-    await this.refreshTokenRepository.save(createdRefreshToken);
+    // 기존 토큰이 있으면 업데이트, 없으면 새로 생성
+    await this.refreshTokenRepository.upsert(
+      {
+        user,
+        token: newRefreshToken,
+        expiresAt,
+      },
+      ['user'], // 중복 방지: 동일한 user에 대한 토큰을 업데이트
+    );
 
     return newRefreshToken;
   }
