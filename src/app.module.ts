@@ -7,6 +7,7 @@ import { typeORMConfig } from './configs/typeORM.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './apis/user/user.module';
 import { AuthModule } from './apis/auth/auth.module';
+import { MqttModule } from './mqtt/mqtt.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthModule } from './apis/auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    MqttModule,
   ],
   controllers: [AppController],
   providers: [AppService],
