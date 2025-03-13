@@ -8,6 +8,18 @@ services:
       - '1883:1883' # MQTT 기본 포트
       - '9001:9001' # WebSocket 포트
     volumes:
-      - ./mosquitto/config:/mosquitto/config # 설정 파일
-      - ./mosquitto/data:/mosquitto/data # 데이터
-      - ./mosquitto/log:/mosquitto/log # 로그
+      - ./docker/mosquitto/config:/mosquitto/config # 설정 파일
+      - ./docker/mosquitto/data:/mosquitto/data # 데이터
+      - ./docker/mosquitto/log:/mosquitto/log # 로그
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379' # Redis 기본 포트
+    volumes:
+      - ./docker/redis/data:/data # 데이터
+    command: redis-server --appendonly yes # AOF 사용 (모든 쓰기 명령 기록)
+
+volumes:
+  redis-data:

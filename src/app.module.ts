@@ -8,6 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './apis/user/user.module';
 import { AuthModule } from './apis/auth/auth.module';
 import { MqttModule } from './mqtt/mqtt.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MqttModule } from './mqtt/mqtt.module';
     UserModule,
     AuthModule,
     MqttModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
