@@ -8,14 +8,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   imports: [
     ClientsModule.registerAsync([
       {
-        name: 'REDIS_SERVICE',
+        name: 'REDIS_SERVICE', // 클라이언트 식별 이름
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
-          transport: Transport.REDIS,
+          transport: Transport.REDIS, // 통신 방식 Redis로 지정
           options: {
-            host: configService.get<string>('REDIS_HOST'),
-            port: configService.get<number>('REDIS_PORT'),
+            host: configService.get<string>('REDIS_HOST'), // 마이크로서비스 호스트
+            port: configService.get<number>('REDIS_PORT'), // 마이크로서비스 포트
           },
         }),
       },
