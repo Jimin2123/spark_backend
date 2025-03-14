@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { MqttController } from './mqtt.controller';
 import { MqttService } from './mqtt.service';
 
@@ -9,7 +9,6 @@ import { MqttService } from './mqtt.service';
     ClientsModule.registerAsync([
       {
         name: 'MQTT_SERVICE',
-        imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
           transport: Transport.MQTT,

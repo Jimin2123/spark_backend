@@ -6,7 +6,7 @@ import { LocalAccount } from 'src/entities/local-account.entity';
 import { RefreshToken } from 'src/entities/refresh-token.entity';
 import { TokenService } from './token.service';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/configs/jwt.config';
 import { JwtStrategy } from 'src/common/guards/passports/jwt.strategy';
 
@@ -14,7 +14,6 @@ import { JwtStrategy } from 'src/common/guards/passports/jwt.strategy';
   imports: [
     TypeOrmModule.forFeature([LocalAccount, RefreshToken]),
     JwtModule.registerAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: jwtConfig,
     }),

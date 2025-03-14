@@ -2,14 +2,13 @@ import { Module } from '@nestjs/common';
 import { RedisService } from './redis.service';
 import { RedisController } from './redis.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     ClientsModule.registerAsync([
       {
         name: 'REDIS_SERVICE', // 클라이언트 식별 이름
-        imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
           transport: Transport.REDIS, // 통신 방식 Redis로 지정

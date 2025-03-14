@@ -19,12 +19,11 @@ import * as redisStore from 'cache-manager-ioredis';
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
     CacheModule.registerAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         stores: redisStore, // 캐시 저장소로 Redis 사용
-        host: configService.get('REDIS_HOST'),
-        port: configService.get('REDIS_PORT'),
+        host: configService.get<string>('REDIS_HOST'),
+        port: configService.get<number>('REDIS_PORT'),
         ttl: 60, // 초 단위
       }),
     }),
@@ -37,7 +36,6 @@ import * as redisStore from 'cache-manager-ioredis';
       ],
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: typeORMConfig,
     }),
