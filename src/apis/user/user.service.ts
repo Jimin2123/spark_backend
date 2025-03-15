@@ -6,8 +6,8 @@ import { User } from 'src/entities/user.entity';
 import { hashPassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
-import { RedisService } from 'src/redis/redis.service';
-import { CacheService } from 'src/redis/cache.service';
+import { RedisService } from 'src/modules/redis/redis.service';
+import { CacheService } from 'src/modules/redis/cache.service';
 
 @Injectable()
 export class UserService {

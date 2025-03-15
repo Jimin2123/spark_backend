@@ -7,8 +7,8 @@ import { typeORMConfig } from './configs/typeORM.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './apis/user/user.module';
 import { AuthModule } from './apis/auth/auth.module';
-import { MqttModule } from './mqtt/mqtt.module';
-import { RedisModule } from './redis/redis.module';
+import { MqttModule } from './modules/mqtt/mqtt.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
