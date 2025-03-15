@@ -61,3 +61,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /docker/mosquitto/data
 docker/mosquitto/log
 docker/mosquitto/config/passwords
+
+# Redis
+/docker/redis/data
+docker/redis/log
