@@ -41,8 +41,6 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
-.env.dev
-.env.prod
 .env*
 
 # temp directory
@@ -57,12 +55,3 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# MQTT Broker
-docker/mosquitto/data
-docker/mosquitto/log
-docker/mosquitto/config/passwords
-
-# Redis
-docker/redis/data
-docker/redis/log
