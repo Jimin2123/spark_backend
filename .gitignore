@@ -58,6 +58,6 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # MQTT Broker
-mosquitto/data
-mosquitto/log
-mosquitto/config/passwords
+/docker/mosquitto/data
+docker/mosquitto/log
+docker/mosquitto/config/passwords
