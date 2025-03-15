@@ -6,6 +6,8 @@ import { User } from 'src/entities/user.entity';
 import { hashPassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
+import { RedisService } from 'src/redis/redis.service';
+import { CacheService } from 'src/redis/cache.service';
 
 @Injectable()
 export class UserService {
@@ -15,6 +17,7 @@ export class UserService {
     @InjectRepository(LocalAccount)
     private readonly localAccountRepository: Repository<LocalAccount>,
     private readonly authService: AuthService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -60,6 +63,9 @@ export class UserService {
    * @returns 사용자 정보
    */
   async findUserById(uid: string, role?: string) {
+    const cachedUser = await this.cacheService.getCache<User>(uid);
+    if (cachedUser) return cachedUser;
+
     const user = await this.userRepository.findOne({
       where: { uid },
     });
@@ -68,6 +74,7 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
+    await this.cacheService.setCache(uid, user, 3600);
     return user;
   }
 }
