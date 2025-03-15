@@ -7,6 +7,7 @@ import { hashPassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { RedisService } from 'src/redis/redis.service';
+import { CacheService } from 'src/redis/cache.service';
 
 @Injectable()
 export class UserService {
@@ -16,16 +17,8 @@ export class UserService {
     @InjectRepository(LocalAccount)
     private readonly localAccountRepository: Repository<LocalAccount>,
     private readonly authService: AuthService,
-    private readonly redisService: RedisService,
+    private readonly cacheService: CacheService,
   ) {}
-
-  async cacheData(): Promise<void> {
-    await this.redisService.set('test-key', 'Hello, Redis!', 60); // 60초 TTL 설정
-  }
-
-  async getData(): Promise<string | null> {
-    return this.redisService.get('test-key');
-  }
 
   /**
    * 사용자를 생성하고 로그인 합니다.
@@ -70,6 +63,9 @@ export class UserService {
    * @returns 사용자 정보
    */
   async findUserById(uid: string, role?: string) {
+    const cachedUser = await this.cacheService.getCache<User>(uid);
+    if (cachedUser) return cachedUser;
+
     const user = await this.userRepository.findOne({
       where: { uid },
     });
@@ -78,6 +74,7 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
+    await this.cacheService.setCache(uid, user, 3600);
     return user;
   }
 }

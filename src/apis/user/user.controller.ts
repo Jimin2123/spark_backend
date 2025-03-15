@@ -17,18 +17,6 @@ export class UserController {
     return await this.userService.createUser(createUserDto);
   }
 
-  @Get('cache')
-  async cacheData() {
-    await this.userService.cacheData();
-    return { message: 'Data cached!' };
-  }
-
-  @Get('fetch')
-  async fetchData() {
-    const data = await this.userService.getData();
-    return { data };
-  }
-
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getUser(@CurrentUser() userId: string) {
