@@ -44,7 +44,7 @@ export class AuthService {
     return this.generateTokens(localAccount.user);
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<Tokens> {
+  async refreshTokens(refreshToken: string): Promise<Tokens> {
     // 리프레시 토큰 검증 (변조 여부 체크)
     const payload = this.tokenService.verifyRefreshToken(refreshToken);
     if (!payload) {

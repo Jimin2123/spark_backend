@@ -20,14 +20,14 @@ export class AuthController {
     return { accessToken };
   }
 
-  @Post('refresh-accessToken')
-  async refreshAccessToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  @Post('refresh-tokens')
+  async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const getRefreshToken = req.cookies['refreshToken'];
     if (!getRefreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 존재하지 않습니다.');
     }
 
-    const { accessToken, refreshToken } = await this.authService.refreshAccessToken(getRefreshToken);
+    const { accessToken, refreshToken } = await this.authService.refreshTokens(getRefreshToken);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
