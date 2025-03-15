@@ -44,6 +44,28 @@ export class AuthService {
     return this.generateTokens(localAccount.user);
   }
 
+  async refreshAccessToken(refreshToken: string): Promise<Tokens> {
+    // 리프레시 토큰 검증 (변조 여부 체크)
+    const payload = this.tokenService.verifyRefreshToken(refreshToken);
+    if (!payload) {
+      throw new BadRequestException('리프레시 토큰을 갱신할 수 없습니다.');
+    }
+
+    const existingToken = await this.refreshTokenRepository.findOne({
+      where: { token: refreshToken },
+      relations: ['user'],
+    });
+
+    if (!existingToken || existingToken.expiresAt < new Date()) {
+      if (existingToken) {
+        await this.refreshTokenRepository.remove(existingToken);
+      }
+      throw new BadRequestException('유효하지 않은 리프레시 토큰입니다.');
+    }
+
+    return this.generateTokens(existingToken.user);
+  }
+
   /**
    * 사용자 로그인 시 액세스 토큰과 리프레시 토큰을 생성합니다.
    * @param user 로그인된 사용자
