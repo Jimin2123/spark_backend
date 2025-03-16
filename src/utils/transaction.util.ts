@@ -3,7 +3,7 @@ import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class TransactionUtil {
-  constructor(private readonly dataSource: DataSource) {} // 🔥 DataSource를 생성자로 주입받음
+  constructor(private readonly dataSource: DataSource) {} // DataSource를 생성자로 주입받음
 
   async runInTransaction<T>(
     work: (queryRunner: QueryRunner) => Promise<T>,
@@ -11,7 +11,7 @@ export class TransactionUtil {
   ): Promise<T> {
     const queryRunner = this.dataSource.createQueryRunner();
 
-    await queryRunner.startTransaction(); // 🔥 불필요한 connect() 제거
+    await queryRunner.startTransaction(); // 불필요한 connect() 제거
 
     try {
       const result = await work(queryRunner);
@@ -23,17 +23,17 @@ export class TransactionUtil {
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
-      // 🔥 트랜잭션이 활성 상태일 경우만 롤백
+      // 트랜잭션이 활성 상태일 경우만 롤백
       if (queryRunner.isTransactionActive) {
         try {
           await queryRunner.rollbackTransaction();
         } catch (rollbackError) {
           console.error(`❌ 트랜잭션 롤백 실패:`, rollbackError);
-          // 🔥 롤백이 실패했어도 원래 에러를 유지해야 함
+          // 롤백이 실패했어도 원래 에러를 유지해야 함
         }
       }
 
-      // 🔥 롤백 콜백 실행 (실패해도 트랜잭션 흐름에 영향을 주지 않도록)
+      // 롤백 콜백 실행 (실패해도 트랜잭션 흐름에 영향을 주지 않도록)
       if (onRollback) {
         try {
           await onRollback(error);
@@ -42,7 +42,7 @@ export class TransactionUtil {
         }
       }
 
-      throw error; // 🔥 원본 에러 그대로 던지기 (스택 보존)
+      throw error; // 원본 에러 그대로 던지기 (스택 보존)
     } finally {
       try {
         if (!queryRunner.isReleased) {
