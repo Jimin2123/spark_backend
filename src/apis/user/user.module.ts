@@ -10,10 +10,11 @@ import { TokenService } from '../auth/token.service';
 import { JwtService } from '@nestjs/jwt';
 import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
+import { TransactionUtil } from 'src/utils/transaction.util';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken, Address])],
   controllers: [UserController],
-  providers: [UserService, AuthService, TokenService, JwtService, CacheService],
+  providers: [UserService, AuthService, TokenService, JwtService, CacheService, TransactionUtil],
 })
 export class UserModule {}

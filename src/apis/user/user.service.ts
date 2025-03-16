@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
+import { TransactionUtil } from 'src/utils/transaction.util';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
     private readonly addressRepository: Repository<Address>,
     private readonly authService: AuthService,
     private readonly cacheService: CacheService,
+    private readonly transactionUtil: TransactionUtil,
   ) {}
 
   /**
@@ -37,31 +39,44 @@ export class UserService {
       throw new ConflictException('Email is already in use');
     }
 
-    const existingUserName = await this.userRepository.findOne({
-      where: { username },
-    });
+    // 유저네임 중복 확인
+    const existingUserName = await this.userRepository.findOne({ where: { username } });
     if (existingUserName) {
       throw new ConflictException('Username is already in use');
     }
 
-    const createdUser = this.userRepository.create(createUserDto);
-    const savedUser = await this.userRepository.save(createdUser);
+    // 트랜잭션을 사용하여 사용자, 계정, 주소를 생성
+    const user = await this.transactionUtil.runInTransaction(
+      async (queryRunner) => {
+        // User 생성
+        const createdUser = this.userRepository.create(createUserDto);
+        const savedUser = await queryRunner.manager.save(createdUser);
 
-    const hashedPassword = await hashPassword(password);
-    const createdLocalAccount = this.localAccountRepository.create({
-      email,
-      password: hashedPassword,
-      user: savedUser,
-    });
-    await this.localAccountRepository.save(createdLocalAccount);
+        // LocalAccount 생성 (비밀번호 해싱 포함)
+        const hashedPassword = await hashPassword(password);
+        const createdLocalAccount = this.localAccountRepository.create({
+          email,
+          password: hashedPassword,
+          user: savedUser,
+        });
+        await queryRunner.manager.save(createdLocalAccount);
 
-    const createdAddress = this.addressRepository.create({
-      ...createUserDto.address,
-      user: savedUser,
-    });
-    await this.addressRepository.save(createdAddress);
+        // Address 생성
+        const createdAddress = this.addressRepository.create({
+          ...createUserDto.address,
+          user: savedUser,
+        });
+        await queryRunner.manager.save(createdAddress);
 
-    return this.authService.login({ email, password });
+        return savedUser;
+      },
+      async (error) => {
+        // 롤백 발생 시 추가적인 로깅 처리
+        console.error(`❌ User creation transaction failed: ${error.message}`);
+      },
+    );
+
+    return await this.authService.login({ email, password });
   }
 
   /**
