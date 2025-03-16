@@ -1,75 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Logger, QueryRunner } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class TransactionUtil {
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly dataSource: DataSource) {} // 🔥 DataSource를 생성자로 주입받음
 
   async runInTransaction<T>(
-    dataSource: DataSource,
     work: (queryRunner: QueryRunner) => Promise<T>,
-    onRollback?: (error: any) => Promise<void>, // 롤백 시 실행할 콜백 함수 추가
+    onRollback?: (error: any) => Promise<void>, // 롤백 시 실행할 콜백 함수
   ): Promise<T> {
-    const queryRunner = dataSource.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.startTransaction(); // 🔥 불필요한 connect() 제거
 
     try {
-      this.logger.log('info', '트랜잭션 시작 중...');
-      await queryRunner.connect();
-      this.logger.log('info', 'QueryRunner 연결 성공.');
+      const result = await work(queryRunner);
 
-      await queryRunner.startTransaction();
-      this.logger.log('info', '트랜잭션이 시작되었습니다.');
-
-      const startTime = Date.now();
-
-      try {
-        this.logger.log('info', '트랜잭션 작업을 실행합니다.');
-        const result = await work(queryRunner);
-
-        if (result === undefined || result === null) {
-          this.logger.logQueryError(
-            '작업 결과 검증 실패',
-            `결과가 유효하지 않습니다. Context: ${JSON.stringify(result)}`,
-            [],
-          );
-          throw new Error(`트랜잭션 실패: 작업 결과가 유효하지 않습니다.`);
-        }
-
-        const elapsedTime = Date.now() - startTime;
-        this.logger.log('info', `트랜잭션 작업 종료. 소요 시간: ${elapsedTime}ms`);
-
-        await queryRunner.commitTransaction();
-        this.logger.log('info', '트랜잭션이 성공적으로 커밋되었습니다.');
-        return result;
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        this.logger.logQueryError(
-          error.message,
-          `트랜잭션 롤백 실행됨. QueryRunner 상태: isTransactionActive=${queryRunner.isTransactionActive}`,
-          [],
-        );
-
-        // 롤백 시 콜백 함수 호출
-        if (onRollback) await onRollback(error);
-
-        throw new Error(`트랜잭션 실패: ${error.message}`);
+      if (result === undefined || result === null) {
+        throw new Error(`트랜잭션 실패: 작업 결과가 유효하지 않습니다.`);
       }
-    } catch (connectError) {
-      this.logger.logQueryError(connectError.message, 'QueryRunner 연결 실패', []);
-      throw new Error(`QueryRunner 연결 실패: ${connectError.message}`);
+
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      // 🔥 트랜잭션이 활성 상태일 경우만 롤백
+      if (queryRunner.isTransactionActive) {
+        try {
+          await queryRunner.rollbackTransaction();
+        } catch (rollbackError) {
+          console.error(`❌ 트랜잭션 롤백 실패:`, rollbackError);
+          // 🔥 롤백이 실패했어도 원래 에러를 유지해야 함
+        }
+      }
+
+      // 🔥 롤백 콜백 실행 (실패해도 트랜잭션 흐름에 영향을 주지 않도록)
+      if (onRollback) {
+        try {
+          await onRollback(error);
+        } catch (rollbackError) {
+          console.error(`❌ onRollback 실행 중 오류 발생:`, rollbackError);
+        }
+      }
+
+      throw error; // 🔥 원본 에러 그대로 던지기 (스택 보존)
     } finally {
       try {
         if (!queryRunner.isReleased) {
           await queryRunner.release();
-          this.logger.log('info', 'QueryRunner가 성공적으로 해제되었습니다.');
         }
       } catch (releaseError) {
-        this.logger.logQueryError(
-          releaseError.message,
-          `QueryRunner 해제 실패. QueryRunner 상태: isTransactionActive=${queryRunner.isTransactionActive}`,
-          [],
-        );
-        throw new Error(`QueryRunner 해제 실패: ${releaseError.message}`);
+        console.error(`QueryRunner 해제 실패:`, releaseError);
       }
     }
   }
