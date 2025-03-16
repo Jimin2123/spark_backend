@@ -24,4 +24,14 @@ npm i --save helmet
 
 # Rate Limiting 기능을 제공
 npm i --save @nestjs/throttler
+
+# Database
+npm install --save @nestjs/typeorm typeorm mysql2
+
+# ENV
+npm install --save-dev cross-env
 ```
+
+## 2025/03/13
+
+MQTT를 사용해 IOT 데이터를 가져오기 위해서 세팅을 해주었음
