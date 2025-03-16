@@ -7,7 +7,7 @@ export function SwaggerCreateUser() {
   return applyDecorators(
     ApiOperation({
       summary: '사용자 생성 API',
-      description: '사용자를 생성합니다.',
+      description: '사용자를 생성하고 Access Token 및 Refresh Token을 반환합니다.',
     }),
     ApiBody({
       description: '사용자 생성 정보',
