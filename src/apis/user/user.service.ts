@@ -46,7 +46,7 @@ export class UserService {
     }
 
     // 트랜잭션을 사용하여 사용자, 계정, 주소를 생성
-    return await this.transactionUtil.runInTransaction(
+    const user = await this.transactionUtil.runInTransaction(
       async (queryRunner) => {
         // User 생성
         const createdUser = this.userRepository.create(createUserDto);
@@ -68,14 +68,15 @@ export class UserService {
         });
         await queryRunner.manager.save(createdAddress);
 
-        // 모든 데이터 저장 후 로그인 토큰 반환
-        return this.authService.login({ email, password });
+        return savedUser;
       },
       async (error) => {
         // 롤백 발생 시 추가적인 로깅 처리
         console.error(`❌ User creation transaction failed: ${error.message}`);
       },
     );
+
+    return await this.authService.login({ email, password });
   }
 
   /**
