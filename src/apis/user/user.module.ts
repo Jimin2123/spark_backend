@@ -8,11 +8,11 @@ import { AuthService } from '../auth/auth.service';
 import { RefreshToken } from 'src/entities/refresh-token.entity';
 import { TokenService } from '../auth/token.service';
 import { JwtService } from '@nestjs/jwt';
-import { RedisService } from 'src/modules/redis/redis.service';
 import { CacheService } from 'src/modules/redis/cache.service';
+import { Address } from 'src/entities/address.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken])],
+  imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken, Address])],
   controllers: [UserController],
   providers: [UserService, AuthService, TokenService, JwtService, CacheService],
 })

@@ -6,8 +6,8 @@ import { User } from 'src/entities/user.entity';
 import { hashPassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
-import { RedisService } from 'src/modules/redis/redis.service';
 import { CacheService } from 'src/modules/redis/cache.service';
+import { Address } from 'src/entities/address.entity';
 
 @Injectable()
 export class UserService {
@@ -16,6 +16,8 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(LocalAccount)
     private readonly localAccountRepository: Repository<LocalAccount>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
     private readonly authService: AuthService,
     private readonly cacheService: CacheService,
   ) {}
@@ -52,6 +54,12 @@ export class UserService {
       user: savedUser,
     });
     await this.localAccountRepository.save(createdLocalAccount);
+
+    const createdAddress = this.addressRepository.create({
+      ...createUserDto.address,
+      user: savedUser,
+    });
+    await this.addressRepository.save(createdAddress);
 
     return this.authService.login({ email, password });
   }

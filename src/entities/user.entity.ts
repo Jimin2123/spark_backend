@@ -1,8 +1,9 @@
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { LocalAccount } from './local-account.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { Address } from './address.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -41,4 +42,7 @@ export class User extends BaseEntity {
 
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.user, { cascade: true })
   refreshToken: RefreshToken;
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address;
 }

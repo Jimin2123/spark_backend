@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { AddressDto } from './address.dto';
 
 export class CreateUserDto {
   @ApiProperty({ description: '이메일', example: 'test@example.com' })
@@ -41,4 +52,10 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   phone?: string;
+
+  @ApiProperty({ description: '주소 정보', type: AddressDto })
+  @ValidateNested()
+  @Type(() => AddressDto)
+  @IsNotEmpty()
+  address: AddressDto;
 }
