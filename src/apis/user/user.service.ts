@@ -9,6 +9,7 @@ import { AuthService } from '../auth/auth.service';
 import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
 import { TransactionUtil } from 'src/utils/transaction.util';
+import { Coin } from 'src/entities/coin.entity';
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,8 @@ export class UserService {
     private readonly localAccountRepository: Repository<LocalAccount>,
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
+    @InjectRepository(Coin)
+    private readonly coinRepository: Repository<Coin>,
     private readonly authService: AuthService,
     private readonly cacheService: CacheService,
     private readonly transactionUtil: TransactionUtil,
@@ -68,6 +71,11 @@ export class UserService {
         });
         await queryRunner.manager.save(createdAddress);
 
+        const createdCoin = this.coinRepository.create({
+          user: savedUser,
+        });
+        await queryRunner.manager.save(createdCoin);
+
         return savedUser;
       },
       async (error) => {
@@ -85,12 +93,13 @@ export class UserService {
    * @param role 사용자 역할
    * @returns 사용자 정보
    */
-  async findUserById(uid: string, role?: string) {
+  async findUserById(uid: string, relations: string[] = []) {
     const cachedUser = await this.cacheService.getCache<User>(uid);
     if (cachedUser) return cachedUser;
 
     const user = await this.userRepository.findOne({
       where: { uid },
+      relations,
     });
 
     if (!user) {

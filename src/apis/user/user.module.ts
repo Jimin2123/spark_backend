@@ -11,9 +11,10 @@ import { JwtService } from '@nestjs/jwt';
 import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
 import { TransactionUtil } from 'src/utils/transaction.util';
+import { Coin } from 'src/entities/coin.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken, Address])],
+  imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken, Address, Coin])],
   controllers: [UserController],
   providers: [UserService, AuthService, TokenService, JwtService, CacheService, TransactionUtil],
 })

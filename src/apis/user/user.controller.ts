@@ -22,12 +22,12 @@ export class UserController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getUser(@CurrentUser() userId: string) {
-    return this.userService.findUserById(userId);
+    return this.userService.findUserById(userId, ['coin', 'addresses', 'localAccount']);
   }
 
   @Get(':userId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async getUserById(@Param('userId') uid: string, @CurrentUserRole() role: UserRole) {
-    return this.userService.findUserById(uid, role);
+  async getUserById(@Param('userId') uid: string) {
+    return this.userService.findUserById(uid);
   }
 }
