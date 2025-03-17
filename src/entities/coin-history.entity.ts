@@ -28,7 +28,7 @@ export class CoinHistory extends BaseEntity {
   amount: number; // 변동된 코인 개수 (양수: 충전, 음수: 사용)
 
   @Column({ type: 'enum', enum: ReferenceType })
-  referenceType?: ReferenceType; // 관련된 트랜잭션 타입 (예: 뽑기, 결제)
+  referenceType: ReferenceType; // 관련된 트랜잭션 타입 (예: 뽑기, 결제)
 
   @Column()
   referenceId: string; // 관련된 트랜잭션 ID (예: 뽑기 ID, 결제 ID)
