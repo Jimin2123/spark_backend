@@ -17,7 +17,7 @@ export enum CoinTransactionStatus {
 @Entity()
 export class CoinTransaction extends BaseEntity {
   @Column({ type: 'enum', enum: CoinTransactionStatus, default: CoinTransactionStatus.PENDING })
-  transactionType: CoinTransactionStatus;
+  status: CoinTransactionStatus;
 
   @Column({ type: 'int' })
   amount: number;
