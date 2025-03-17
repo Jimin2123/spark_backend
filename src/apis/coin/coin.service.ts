@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CoinHistory, CoinTransactionType, ReferenceType } from 'src/entities/coin-history.entity';
 import { CoinTransaction, CoinTransactionStatus } from 'src/entities/coin-transaction.entity';
 import { Coin } from 'src/entities/coin.entity';
+import { TransactionUtil } from 'src/utils/transaction.util';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class CoinService {
     private readonly coinTransactionRepository: Repository<CoinTransaction>,
     @InjectRepository(CoinHistory)
     private readonly coinHistoryRepository: Repository<CoinHistory>,
+    private readonly transactionUtil: TransactionUtil,
   ) {}
 
   /**
@@ -45,39 +47,41 @@ export class CoinService {
    * @param coinTransactionId
    * @param paymentKey
    */
-  async successCharge(coinTransactionId: string, paymentKey: string): Promise<void> {
-    // 코인 트랜잭션 조회
-    const coinTransaction = await this.coinTransactionRepository.findOne({
-      where: { uid: coinTransactionId },
-      relations: ['user'],
+  async successCharge(coinTransactionId: string, paymentKey: string): Promise<Coin> {
+    return await this.transactionUtil.runInTransaction(async (queryRunner) => {
+      // 코인 트랜잭션 조회
+      const coinTransaction = await queryRunner.manager.findOne(CoinTransaction, {
+        where: { uid: coinTransactionId },
+        relations: ['user'],
+      });
+      if (!coinTransaction) {
+        throw new NotFoundException('CoinTransaction not found');
+      }
+      // 코인 트랜잭션 상태 변경
+      coinTransaction.status = CoinTransactionStatus.SUCCESS;
+      coinTransaction.paymentGatewayId = paymentKey;
+      const savedCoinTransaction = await queryRunner.manager.save(coinTransaction);
+
+      // 코인 잔액 변경
+      const coin = await queryRunner.manager.findOne(Coin, { where: { user: { uid: savedCoinTransaction.user.uid } } });
+      if (!coin) {
+        throw new NotFoundException('Coin not found');
+      }
+      coin.balance += coinTransaction.amount;
+      const savedCoin = await queryRunner.manager.save(coin);
+
+      // 코인 변동 내역 저장
+      const coinHistory = this.coinHistoryRepository.create({
+        coin: savedCoin,
+        transactionType: CoinTransactionType.CHARGE,
+        amount: savedCoinTransaction.amount,
+        referenceType: ReferenceType.TRANSACTION,
+        referenceId: savedCoinTransaction.uid,
+      });
+      await queryRunner.manager.save(coinHistory);
+
+      return savedCoin;
     });
-
-    if (!coinTransaction) {
-      throw new NotFoundException('CoinTransaction not found');
-    }
-
-    // // 코인 트랜잭션 상태 변경
-    coinTransaction.status = CoinTransactionStatus.SUCCESS;
-    coinTransaction.paymentGatewayId = paymentKey;
-    await this.coinTransactionRepository.save(coinTransaction);
-
-    // // 코인 잔액 변경
-    const coin = await this.coinRepository.findOne({ where: { user: { uid: coinTransaction.user.uid } } });
-    if (!coin) {
-      throw new NotFoundException('Coin not found');
-    }
-    coin.balance += coinTransaction.amount;
-    await this.coinRepository.save(coin);
-
-    // // 코인 변동 내역 저장
-    const coinHistory = this.coinHistoryRepository.create({
-      coin,
-      transactionType: CoinTransactionType.CHARGE,
-      amount: coinTransaction.amount,
-      referenceType: ReferenceType.TRANSACTION,
-      referenceId: coinTransaction.uid,
-    });
-    await this.coinHistoryRepository.save(coinHistory);
   }
 
   /**
@@ -85,7 +89,7 @@ export class CoinService {
    * @param coinTransactionId
    * @param paymentGatewayId
    */
-  async failedCharge(coinTransactionId: string, paymentGatewayId): Promise<void> {
+  async failedCharge(coinTransactionId: string, paymentGatewayId: string): Promise<void> {
     // 코인 트랜잭션 조회
     const coinTransaction = await this.coinTransactionRepository.findOne({
       where: { uid: coinTransactionId, paymentGatewayId },
