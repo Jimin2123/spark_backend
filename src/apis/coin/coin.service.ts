@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CoinHistory, CoinTransactionType, ReferenceType } from 'src/entities/coin-history.entity';
 import { CoinTransaction, CoinTransactionStatus } from 'src/entities/coin-transaction.entity';
 import { Coin } from 'src/entities/coin.entity';
+import { SpendCoinDto } from 'src/entities/dtos/coin.dto';
 import { TransactionUtil } from 'src/utils/transaction.util';
 import { Repository } from 'typeorm';
 
@@ -26,6 +27,44 @@ export class CoinService {
   async getBalance(userId: string) {
     const coin = await this.coinRepository.findOne({ where: { user: { uid: userId } } });
     return coin ? coin.balance : 0;
+  }
+
+  /**
+   * 사용자의 코인 사용을 처리하는 메서드
+   * @param userId
+   * @param spendCoinDto
+   * @returns 코인
+   * @description 사용자의 코인 사용을 처리하고, 코인 변동 내역을 저장합니다.
+   */
+  async spendCoin(userId: string, spendCoinDto: SpendCoinDto): Promise<Coin> {
+    const { amount, referenceId, referenceType } = spendCoinDto;
+    return await this.transactionUtil.runInTransaction(async (queryRunner) => {
+      // 코인 잔액 조회
+      const coin = await queryRunner.manager.findOne(Coin, { where: { user: { uid: userId } } });
+      if (!coin) {
+        throw new NotFoundException('Coin not found');
+      }
+
+      if (coin.balance < amount) {
+        throw new ForbiddenException('Insufficient balance');
+      }
+
+      // 코인 잔액 변경
+      coin.balance -= amount;
+      const savedCoin = await queryRunner.manager.save(coin);
+
+      // 코인 변동 내역 저장
+      const coinHistory = this.coinHistoryRepository.create({
+        coin: savedCoin,
+        transactionType: CoinTransactionType.SPEND,
+        referenceType,
+        referenceId,
+        amount,
+      });
+      await queryRunner.manager.save(coinHistory);
+
+      return savedCoin;
+    });
   }
 
   /**
