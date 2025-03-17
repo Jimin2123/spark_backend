@@ -10,6 +10,7 @@ import { AuthModule } from './apis/auth/auth.module';
 import { MqttModule } from './modules/mqtt/mqtt.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { CoinModule } from './apis/coin/coin.module';
+import { PaymentsModule } from './apis/payments/payments.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CoinModule } from './apis/coin/coin.module';
     MqttModule,
     RedisModule,
     CoinModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
