@@ -14,6 +14,11 @@ export enum ReferenceType {
   TRANSACTION = 'TRANSACTION', // 결제
 }
 
+/**
+ * 사용자의 코인 변동 내역을 저장하는 엔티티
+ * - 코인 충전, 사용, 환불 등의 기록을 남김
+ * - Coin과 다대일(N:1) 관계
+ */
 @Entity()
 export class CoinHistory extends BaseEntity {
   @Column({ type: 'enum', enum: CoinTransactionType })

@@ -16,6 +16,11 @@ export enum PaymentMethod {
   COUPON = 'COUPON', // 쿠폰
 }
 
+/**
+ * 외부 결제 시스템과 연동된 코인 결제 트랜잭션 엔티티
+ * - 결제 진행 상태(PENDING, SUCCESS, FAILED)를 관리
+ * - User와 다대일(N:1) 관계
+ */
 @Entity()
 export class CoinTransaction extends BaseEntity {
   @Column({ type: 'enum', enum: CoinTransactionStatus })
