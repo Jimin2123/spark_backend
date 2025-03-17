@@ -78,4 +78,19 @@ export class CoinService {
     });
     await this.coinHistoryRepository.save(coinHistory);
   }
+
+  async failedCharge(userId: string, coinTransactionId: string): Promise<void> {
+    // 코인 트랜잭션 조회
+    const coinTransaction = await this.coinTransactionRepository.findOne({
+      where: { uid: coinTransactionId, user: { uid: userId } },
+    });
+
+    if (!coinTransaction) {
+      throw new NotFoundException('CoinTransaction not found');
+    }
+
+    // 코인 트랜잭션 상태 변경
+    coinTransaction.status = CoinTransactionStatus.FAILED;
+    await this.coinTransactionRepository.save(coinTransaction);
+  }
 }
