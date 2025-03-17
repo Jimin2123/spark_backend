@@ -16,11 +16,11 @@ export enum CoinTransactionStatus {
  */
 @Entity()
 export class CoinTransaction extends BaseEntity {
-  @Column({ type: 'enum', enum: CoinTransactionStatus })
-  transactionType: CoinTransactionStatus;
+  @Column({ type: 'enum', enum: CoinTransactionStatus, default: CoinTransactionStatus.PENDING })
+  status: CoinTransactionStatus;
 
   @Column({ type: 'int' })
-  amount: number; // 변동된 코인 개수 (양수: 충전, 음수: 환불)
+  amount: number;
 
   @Column({ nullable: true })
   paymentGatewayId?: string; // 결제사 트랜잭션 ID (충전 시 필요)
