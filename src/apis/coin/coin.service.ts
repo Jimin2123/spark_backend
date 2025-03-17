@@ -43,9 +43,9 @@ export class CoinService {
 
   /**
    * 사용자의 코인 충전을 성공 처리하는 메서드
-   * @param userId
    * @param coinTransactionId
    * @param paymentKey
+   * @returns 코인
    */
   async successCharge(coinTransactionId: string, paymentKey: string): Promise<Coin> {
     return await this.transactionUtil.runInTransaction(async (queryRunner) => {
@@ -89,11 +89,14 @@ export class CoinService {
    * @param coinTransactionId
    * @param paymentGatewayId
    */
-  async failedCharge(coinTransactionId: string, paymentGatewayId: string): Promise<void> {
+  async failedCharge(coinTransactionId: string, paymentGatewayId?: string): Promise<void> {
     // 코인 트랜잭션 조회
-    const coinTransaction = await this.coinTransactionRepository.findOne({
-      where: { uid: coinTransactionId, paymentGatewayId },
-    });
+
+    const coinTransaction = paymentGatewayId
+      ? await this.coinTransactionRepository.findOne({
+          where: { uid: coinTransactionId, paymentGatewayId },
+        })
+      : await this.coinTransactionRepository.findOne({ where: { uid: coinTransactionId } });
 
     if (!coinTransaction) {
       throw new NotFoundException('CoinTransaction not found');

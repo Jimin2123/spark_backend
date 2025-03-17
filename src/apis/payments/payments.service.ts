@@ -76,12 +76,15 @@ export class PaymentsService {
       const response = await firstValueFrom(
         this.httpService.post(`${this.baseUrl}/confirm`, data, { headers: this.getTossAuthHeaders() }),
       );
-      console.log(response.data);
       await this.coinService.successCharge(orderId, paymentKey); // 코인 충전 성공 처리
       return response.data;
     } catch (error) {
       await this.coinService.failedCharge(orderId, paymentKey); // 코인 충전 실패 처리
       throw new Error(`결제 승인 실패: ${error.response?.data?.message || error.message}`);
     }
+  }
+
+  async failedTossPayment(orderId: string) {
+    await this.coinService.failedCharge(orderId);
   }
 }

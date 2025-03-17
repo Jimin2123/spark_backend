@@ -4,7 +4,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { TossPaymentDto } from 'src/entities/dtos/payments.dto';
-import { Response } from 'express';
+import { response, Response } from 'express';
 
 @Controller('payments')
 @ApiBearerAuth()
@@ -46,6 +46,8 @@ export class PaymentsController {
   ) {
     // 실패 원인 로깅 또는 처리 로직 추가
     console.error(`결제 실패 - 코드: ${code}, 메시지: ${message}, 주문 ID: ${orderId}`);
+    // 결제 실패 처리
+    this.paymentsService.failedTossPayment(orderId);
 
     // 프론트엔드로 실패 결과 전달
     res.redirect(`http://localhost:4000/payment-fail?orderId=${orderId}&message=${message}`);
