@@ -38,4 +38,44 @@ export class CoinService {
     });
     await this.coinTransactionRepository.save(coinTransaction);
   }
+
+  /**
+   * 사용자의 코인 충전을 성공 처리하는 메서드
+   * @param userId
+   * @param coinTransactionId
+   * @param paymentKey
+   */
+  async successCharge(userId: string, coinTransactionId: string, paymentKey: string): Promise<void> {
+    // 코인 트랜잭션 조회
+    const coinTransaction = await this.coinTransactionRepository.findOne({
+      where: { uid: coinTransactionId, user: { uid: userId } },
+    });
+
+    if (!coinTransaction) {
+      throw new NotFoundException('CoinTransaction not found');
+    }
+
+    // 코인 트랜잭션 상태 변경
+    coinTransaction.status = CoinTransactionStatus.SUCCESS;
+    coinTransaction.paymentGatewayId = paymentKey;
+    await this.coinTransactionRepository.save(coinTransaction);
+
+    // 코인 잔액 변경
+    let coin = await this.coinRepository.findOne({ where: { user: { uid: userId } } });
+    if (!coin) {
+      coin = this.coinRepository.create({ user: { uid: userId }, balance: 0 });
+    }
+    coin.balance += coinTransaction.amount;
+    await this.coinRepository.save(coin);
+
+    // 코인 변동 내역 저장
+    const coinHistory = this.coinHistoryRepository.create({
+      coin,
+      transactionType: CoinTransactionType.CHARGE,
+      amount: coinTransaction.amount,
+      referenceType: ReferenceType.TRANSACTION,
+      referenceId: coinTransaction.uid,
+    });
+    await this.coinHistoryRepository.save(coinHistory);
+  }
 }
