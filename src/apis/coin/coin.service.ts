@@ -31,12 +31,12 @@ export class CoinService {
    * @param userId
    * @param amount
    */
-  async pendingCharge(userId: string, amount: number): Promise<void> {
+  async pendingCharge(userId: string, amount: number): Promise<CoinTransaction> {
     const coinTransaction = this.coinTransactionRepository.create({
       user: { uid: userId },
       amount,
     });
-    await this.coinTransactionRepository.save(coinTransaction);
+    return await this.coinTransactionRepository.save(coinTransaction);
   }
 
   /**
@@ -45,30 +45,31 @@ export class CoinService {
    * @param coinTransactionId
    * @param paymentKey
    */
-  async successCharge(userId: string, coinTransactionId: string, paymentKey: string): Promise<void> {
+  async successCharge(coinTransactionId: string, paymentKey: string): Promise<void> {
     // 코인 트랜잭션 조회
     const coinTransaction = await this.coinTransactionRepository.findOne({
-      where: { uid: coinTransactionId, user: { uid: userId } },
+      where: { uid: coinTransactionId },
+      relations: ['user'],
     });
 
     if (!coinTransaction) {
       throw new NotFoundException('CoinTransaction not found');
     }
 
-    // 코인 트랜잭션 상태 변경
+    // // 코인 트랜잭션 상태 변경
     coinTransaction.status = CoinTransactionStatus.SUCCESS;
     coinTransaction.paymentGatewayId = paymentKey;
     await this.coinTransactionRepository.save(coinTransaction);
 
-    // 코인 잔액 변경
-    let coin = await this.coinRepository.findOne({ where: { user: { uid: userId } } });
+    // // 코인 잔액 변경
+    const coin = await this.coinRepository.findOne({ where: { user: { uid: coinTransaction.user.uid } } });
     if (!coin) {
-      coin = this.coinRepository.create({ user: { uid: userId }, balance: 0 });
+      throw new NotFoundException('Coin not found');
     }
     coin.balance += coinTransaction.amount;
     await this.coinRepository.save(coin);
 
-    // 코인 변동 내역 저장
+    // // 코인 변동 내역 저장
     const coinHistory = this.coinHistoryRepository.create({
       coin,
       transactionType: CoinTransactionType.CHARGE,
@@ -79,10 +80,15 @@ export class CoinService {
     await this.coinHistoryRepository.save(coinHistory);
   }
 
-  async failedCharge(userId: string, coinTransactionId: string): Promise<void> {
+  /**
+   * 사용자의 코인 충전을 실패 처리하는 메서드
+   * @param coinTransactionId
+   * @param paymentGatewayId
+   */
+  async failedCharge(coinTransactionId: string, paymentGatewayId): Promise<void> {
     // 코인 트랜잭션 조회
     const coinTransaction = await this.coinTransactionRepository.findOne({
-      where: { uid: coinTransactionId, user: { uid: userId } },
+      where: { uid: coinTransactionId, paymentGatewayId },
     });
 
     if (!coinTransaction) {

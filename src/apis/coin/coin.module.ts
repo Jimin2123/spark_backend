@@ -10,5 +10,6 @@ import { CoinTransaction } from 'src/entities/coin-transaction.entity';
   imports: [TypeOrmModule.forFeature([Coin, CoinTransaction, CoinHistory])],
   controllers: [CoinController],
   providers: [CoinService],
+  exports: [CoinService],
 })
 export class CoinModule {}
