@@ -4,13 +4,14 @@ import { LocalAccountDto } from 'src/entities/dtos/auth.dto';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SwaggerLogout, SwaggerRefreshToken } from 'src/common/docs/auth.swagger';
+import { SwaggerLogin, SwaggerLogout, SwaggerRefreshToken } from 'src/common/docs/auth.swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @SwaggerLogin()
   async login(@Body() localAccountDto: LocalAccountDto, @Res({ passthrough: true }) res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(localAccountDto);
     // refreshToken 쿠키 설정
