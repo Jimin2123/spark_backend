@@ -82,6 +82,12 @@ export class PaymentsService {
     }
   }
 
+  /**
+   * 토스 결제 실패 처리
+   * @param orderId
+   * @returns
+   * @description 토스 결제 실패 시 코인 충전을 실패 처리합니다.
+   */
   async failedTossPayment(orderId: string) {
     await this.coinService.failedCharge(orderId);
   }
