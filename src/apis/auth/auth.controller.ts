@@ -47,8 +47,19 @@ export class AuthController {
   @Post('logout')
   @SwaggerLogout()
   @UseGuards(JwtAuthGuard)
-  async logout(@CurrentUser() userId: string, @Res({ passthrough: true }) res: Response): Promise<void> {
+  async logout(
+    @CurrentUser() userId: string,
+    @Req() req: Request, // 요청 객체에서 accessToken 추출
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
     res.clearCookie('refreshToken');
-    await this.authService.logout(userId);
+
+    // Authorization 헤더에서 Bearer 토큰 추출
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new Error('Access Token이 없습니다.');
+    }
+    const accessToken = authHeader.split(' ')[1]; // "Bearer 토큰값"에서 토큰값만 분리
+    await this.authService.logout(userId, accessToken);
   }
 }
