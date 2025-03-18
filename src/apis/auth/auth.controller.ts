@@ -4,7 +4,7 @@ import { LocalAccountDto } from 'src/entities/dtos/auth.dto';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SwaggerLogout } from 'src/common/docs/auth.swagger';
+import { SwaggerLogout, SwaggerRefreshToken } from 'src/common/docs/auth.swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -24,6 +24,7 @@ export class AuthController {
   }
 
   @Post('refresh-tokens')
+  @SwaggerRefreshToken()
   async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const getRefreshToken = req.cookies['refreshToken'];
     if (!getRefreshToken) {
