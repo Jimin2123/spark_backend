@@ -111,4 +111,16 @@ export class AuthService {
 
     return newRefreshToken;
   }
+
+  /**
+   * 사용자 로그아웃을 처리합니다.
+   * @param userId
+   */
+  async logout(userId: string): Promise<void> {
+    const checkRefreshToken = await this.refreshTokenRepository.findOne({ where: { user: { uid: userId } } });
+    if (!checkRefreshToken) {
+      throw new BadRequestException('로그아웃할 수 있는 토큰이 없습니다.');
+    }
+    await this.refreshTokenRepository.delete({ user: { uid: userId } });
+  }
 }

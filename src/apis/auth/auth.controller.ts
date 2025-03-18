@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAccountDto } from 'src/entities/dtos/auth.dto';
 import { Request, Response } from 'express';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { SwaggerLogout } from 'src/common/docs/auth.swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -37,5 +40,13 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @Post('logout')
+  @SwaggerLogout()
+  @UseGuards(JwtAuthGuard)
+  async logout(@CurrentUser() userId: string, @Res({ passthrough: true }) res: Response): Promise<void> {
+    res.clearCookie('refreshToken');
+    await this.authService.logout(userId);
   }
 }
