@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LocalAccountDto } from 'src/entities/dtos/auth.dto';
 import { LocalAccount } from 'src/entities/local-account.entity';
@@ -7,6 +7,7 @@ import { comparePassword } from 'src/utils/hash.util';
 import { Repository } from 'typeorm';
 import { TokenPayload, Tokens, TokenService } from './token.service';
 import { User } from 'src/entities/user.entity';
+import { CacheService } from 'src/modules/redis/cache.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly tokenService: TokenService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -110,5 +112,34 @@ export class AuthService {
     );
 
     return newRefreshToken;
+  }
+
+  /**
+   * 사용자 로그아웃을 처리합니다.
+   * @param userId
+   */
+  async logout(userId: string, accessToken: string): Promise<void> {
+    const checkRefreshToken = await this.refreshTokenRepository.findOne({ where: { user: { uid: userId } } });
+    if (!checkRefreshToken) {
+      throw new BadRequestException('로그아웃할 수 있는 토큰이 없습니다.');
+    }
+    await this.refreshTokenRepository.delete({ user: { uid: userId } });
+
+    // 2. Access Token의 남은 유효기간을 계산하여 Redis 블랙리스트에 등록
+    try {
+      const decodedToken = this.tokenService.verifyAccessToken(accessToken);
+      if (!decodedToken || !decodedToken.exp) {
+        throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+      }
+
+      const currentTime = Math.floor(Date.now() / 1000); // 현재 시간 (초 단위)
+      const ttl = decodedToken.exp - currentTime; // 만료 시간 - 현재 시간 = 남은 TTL
+
+      if (ttl > 0) {
+        await this.cacheService.setCache(`blacklist:${accessToken}`, 'true', ttl);
+      }
+    } catch (error) {
+      throw new UnauthorizedException('토큰을 파싱하는데 실패했습니다.');
+    }
   }
 }

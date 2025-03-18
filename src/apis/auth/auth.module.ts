@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/configs/jwt.config';
 import { JwtStrategy } from 'src/common/guards/passports/jwt.strategy';
+import { CacheService } from 'src/modules/redis/cache.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { JwtStrategy } from 'src/common/guards/passports/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, JwtStrategy],
+  providers: [AuthService, TokenService, JwtStrategy, CacheService],
 })
 export class AuthModule {}
