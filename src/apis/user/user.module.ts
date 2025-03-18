@@ -3,17 +3,14 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
+import { AuthModule } from '../auth/auth.module';
 import { LocalAccount } from 'src/entities/local-account.entity';
-import { AuthService } from '../auth/auth.service';
-import { RefreshToken } from 'src/entities/refresh-token.entity';
-import { TokenService } from '../auth/token.service';
-import { JwtService } from '@nestjs/jwt';
-import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
+import { Coin } from 'src/entities/coin.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, LocalAccount, RefreshToken, Address])],
+  imports: [TypeOrmModule.forFeature([User, LocalAccount, Address, Coin]), AuthModule],
   controllers: [UserController],
-  providers: [UserService, AuthService, TokenService, JwtService, CacheService],
+  providers: [UserService],
 })
 export class UserModule {}

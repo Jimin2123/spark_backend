@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -9,6 +9,10 @@ import { UserModule } from './apis/user/user.module';
 import { AuthModule } from './apis/auth/auth.module';
 import { MqttModule } from './modules/mqtt/mqtt.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { CoinModule } from './apis/coin/coin.module';
+import { PaymentsModule } from './apis/payments/payments.module';
+import { BlacklistMiddleware } from './pipes/middlewares/black-list.middleware';
+import { CommonModule } from './common.module';
 
 @Module({
   imports: [
@@ -33,8 +37,15 @@ import { RedisModule } from './modules/redis/redis.module';
     AuthModule,
     MqttModule,
     RedisModule,
+    CoinModule,
+    PaymentsModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BlacklistMiddleware).forRoutes('*'); // 모든 경로에 적용
+  }
+}
