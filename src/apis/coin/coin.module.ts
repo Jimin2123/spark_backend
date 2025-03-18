@@ -5,12 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Coin } from 'src/entities/coin.entity';
 import { CoinHistory } from 'src/entities/coin-history.entity';
 import { CoinTransaction } from 'src/entities/coin-transaction.entity';
-import { TransactionUtil } from 'src/utils/transaction.util';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Coin, CoinTransaction, CoinHistory])],
   controllers: [CoinController],
-  providers: [CoinService, TransactionUtil],
+  providers: [CoinService],
   exports: [CoinService],
 })
 export class CoinModule {}

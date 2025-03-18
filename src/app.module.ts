@@ -12,7 +12,7 @@ import { RedisModule } from './modules/redis/redis.module';
 import { CoinModule } from './apis/coin/coin.module';
 import { PaymentsModule } from './apis/payments/payments.module';
 import { BlacklistMiddleware } from './pipes/middlewares/black-list.middleware';
-import { CacheService } from './modules/redis/cache.service';
+import { CommonModule } from './common.module';
 
 @Module({
   imports: [
@@ -39,9 +39,10 @@ import { CacheService } from './modules/redis/cache.service';
     RedisModule,
     CoinModule,
     PaymentsModule,
+    CommonModule,
   ],
   controllers: [AppController],
-  providers: [AppService, CacheService],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

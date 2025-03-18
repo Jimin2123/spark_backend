@@ -1,9 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
 import { firstValueFrom } from 'rxjs';
-import { UserService } from '../user/user.service';
 import { TossPaymentDto } from 'src/entities/dtos/payments.dto';
 import { CoinService } from '../coin/coin.service';
 

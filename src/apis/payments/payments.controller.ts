@@ -4,7 +4,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { TossPaymentDto } from 'src/entities/dtos/payments.dto';
-import { response, Response } from 'express';
+import { Response } from 'express';
 
 @Controller('payments')
 @ApiBearerAuth()
