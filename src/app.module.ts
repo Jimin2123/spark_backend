@@ -7,10 +7,7 @@ import { typeORMConfig } from './configs/typeORM.config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './apis/user/user.module';
 import { AuthModule } from './apis/auth/auth.module';
-import { MqttModule } from './modules/mqtt/mqtt.module';
 import { RedisModule } from './modules/redis/redis.module';
-import { CoinModule } from './apis/coin/coin.module';
-import { PaymentsModule } from './apis/payments/payments.module';
 import { BlacklistMiddleware } from './pipes/middlewares/black-list.middleware';
 import { CommonModule } from './common.module';
 
@@ -35,10 +32,7 @@ import { CommonModule } from './common.module';
     }),
     UserModule,
     AuthModule,
-    MqttModule,
     RedisModule,
-    CoinModule,
-    PaymentsModule,
     CommonModule,
   ],
   controllers: [AppController],

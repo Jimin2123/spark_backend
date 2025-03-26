@@ -4,8 +4,6 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 import { LocalAccount } from './local-account.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { Address } from './address.entity';
-import { Coin } from './coin.entity';
-import { CoinTransaction } from './coin-transaction.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -47,10 +45,4 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Address, (address) => address.user, { cascade: true })
   addresses: Address;
-
-  @OneToOne(() => Coin, (coin) => coin.user, { cascade: true })
-  coin: Coin;
-
-  @OneToMany(() => CoinTransaction, (coinTransaction) => coinTransaction.user, { cascade: true })
-  coinTransactions: CoinTransaction;
 }
