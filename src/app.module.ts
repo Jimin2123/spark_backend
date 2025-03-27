@@ -10,6 +10,7 @@ import { AuthModule } from './apis/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { BlacklistMiddleware } from './pipes/middlewares/black-list.middleware';
 import { CommonModule } from './common.module';
+import { RestrictionModule } from './apis/restriction/restriction.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CommonModule } from './common.module';
     AuthModule,
     RedisModule,
     CommonModule,
+    RestrictionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -6,6 +6,7 @@ import { RefreshToken } from './refresh-token.entity';
 import { Address } from './address.entity';
 import { UserActivityLevel } from 'src/common/enums/user-activity-level.enum';
 import { UserGender } from 'src/common/enums/user-gender.enum';
+import { UserRestriction } from './user-restriction.entity';
 
 @Entity()
 @Index('user_username_unique', ['username'], { unique: true })
@@ -42,4 +43,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Address, (address) => address.user, { cascade: true })
   addresses: Address;
+
+  @OneToMany(() => UserRestriction, (userRestriction) => userRestriction.user, { cascade: true })
+  userRestrictions: UserRestriction;
 }

@@ -21,7 +21,7 @@ export class UserController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getUser(@CurrentUser() userId: string) {
-    return this.userService.findUserById(userId, ['addresses', 'localAccount']);
+    return this.userService.findUserById(userId, ['addresses', 'localAccount', 'userRestrictions']);
   }
 
   @Get(':userId')

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -8,6 +9,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { AddressDto } from './address.dto';
@@ -70,4 +72,15 @@ export class CreateUserDto {
   @Type(() => AddressDto)
   @IsNotEmpty()
   address: AddressDto;
+
+  @ApiProperty({
+    description: '음식 제약 사항 ID 배열',
+    example: ['uuid-1234', 'uuid-5678'],
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  dietary_restrictions?: string[];
 }
