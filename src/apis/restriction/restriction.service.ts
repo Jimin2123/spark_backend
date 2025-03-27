@@ -25,6 +25,18 @@ export class RestrictionService {
     return this.dietaryRestrictionRepository.save(this.dietaryRestrictionRepository.create(dto));
   }
 
+  async getDietaryRestrictionByIds(dietary_restrictions: string[]): Promise<DietaryRestriction[]> {
+    const dietaryRestrictions = await this.dietaryRestrictionRepository.findBy({
+      uid: In(dietary_restrictions),
+    });
+
+    if (dietaryRestrictions.length !== dietary_restrictions.length) {
+      throw new NotFoundException('Some dietary restrictions are not found');
+    }
+
+    return dietaryRestrictions;
+  }
+
   async getDietaryRestrictions(): Promise<DietaryRestriction[]> {
     return this.dietaryRestrictionRepository.find();
   }
@@ -36,14 +48,7 @@ export class RestrictionService {
    * @returns
    */
   async createUserRestriction(user: User, dietary_restrictions: string[]): Promise<UserRestriction[]> {
-    const dietaryRestrictions = await this.dietaryRestrictionRepository.findBy({
-      uid: In(dietary_restrictions),
-    });
-
-    if (dietaryRestrictions.length !== dietary_restrictions.length) {
-      throw new NotFoundException('Some dietary restrictions are not found');
-    }
-
+    const dietaryRestrictions = await this.getDietaryRestrictionByIds(dietary_restrictions);
     return dietaryRestrictions.map((dietaryRestriction) =>
       this.userRestrictionRepository.create({
         user,
