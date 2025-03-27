@@ -45,6 +45,16 @@ export class CreateUserDto {
   @IsEnum(UserGender)
   gender: UserGender;
 
+  @ApiProperty({ description: '키', example: 170 })
+  @IsNotEmpty()
+  @IsNumber()
+  height: number;
+
+  @ApiProperty({ description: '몸무게', example: 60 })
+  @IsNotEmpty()
+  @IsNumber()
+  weight: number;
+
   @ApiProperty({ description: '생년월일', example: '1990-01-01' })
   @IsDateString()
   @IsOptional()
