@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DietaryRestriction } from 'src/entities/dietary-restriction.entity';
-import { CreateDietaryRestrictionDto } from 'src/entities/dtos/restriction.dto';
+import { CreateDietaryRestrictionDto, UpdateDietaryRestrictionDto } from 'src/entities/dtos/restriction.dto';
 import { UserRestriction } from 'src/entities/user-restriction.entity';
 import { User } from 'src/entities/user.entity';
 import { In, Repository } from 'typeorm';
@@ -39,6 +39,31 @@ export class RestrictionService {
 
   async getDietaryRestrictions(): Promise<DietaryRestriction[]> {
     return this.dietaryRestrictionRepository.find();
+  }
+
+  /**
+   * 식이 제한을 업데트 합니다.
+   * @param uid
+   * @param dto
+   * @returns DietaryRestriction
+   */
+  async updateDietaryRestriction(uid: string, dto: UpdateDietaryRestrictionDto): Promise<DietaryRestriction> {
+    const dietaryRestriction = await this.dietaryRestrictionRepository.findOne({ where: { uid } });
+    if (!dietaryRestriction) {
+      throw new NotFoundException('Dietary restriction not found');
+    }
+
+    Object.assign(dietaryRestriction, dto);
+    return this.dietaryRestrictionRepository.save(dietaryRestriction);
+  }
+
+  /**
+   * 식이 제한을 삭제합니다.
+   * @param uid
+   * @returns void
+   */
+  async deleteDietaryRestriction(uid: string): Promise<void> {
+    this.dietaryRestrictionRepository.softDelete(uid);
   }
 
   /**
