@@ -46,6 +46,12 @@ export class AuthService {
     return this.generateTokens(localAccount.user);
   }
 
+  /**
+   * 리프레시 토큰을 이용하여 액세스 토큰을 재발급합니다.
+   * @param refreshToken
+   * @returns Tokens
+   * @description 리프레시 토큰을 검증하고, 만료된 경우 새로운 토큰을 발급합니다.
+   */
   async refreshTokens(refreshToken: string): Promise<Tokens> {
     // 리프레시 토큰 검증 (변조 여부 체크)
     const payload = this.tokenService.verifyRefreshToken(refreshToken);

@@ -9,7 +9,7 @@ import { AuthService } from '../auth/auth.service';
 import { CacheService } from 'src/modules/redis/cache.service';
 import { Address } from 'src/entities/address.entity';
 import { TransactionUtil } from 'src/utils/transaction.util';
-import { Coin } from 'src/entities/coin.entity';
+import { RestrictionService } from '../restriction/restriction.service';
 
 @Injectable()
 export class UserService {
@@ -20,9 +20,8 @@ export class UserService {
     private readonly localAccountRepository: Repository<LocalAccount>,
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
-    @InjectRepository(Coin)
-    private readonly coinRepository: Repository<Coin>,
     private readonly authService: AuthService,
+    private readonly restrictionService: RestrictionService,
     private readonly cacheService: CacheService,
     private readonly transactionUtil: TransactionUtil,
   ) {}
@@ -33,7 +32,7 @@ export class UserService {
    * @returns
    */
   async createUser(createUserDto: CreateUserDto) {
-    const { email, username, password } = createUserDto;
+    const { email, username, password, dietary_restrictions } = createUserDto;
 
     const existingEmail = await this.localAccountRepository.findOne({
       where: { email },
@@ -71,10 +70,14 @@ export class UserService {
         });
         await queryRunner.manager.save(createdAddress);
 
-        const createdCoin = this.coinRepository.create({
-          user: savedUser,
-        });
-        await queryRunner.manager.save(createdCoin);
+        // 음식 제약사항 생성
+        if (dietary_restrictions && dietary_restrictions.length > 0) {
+          const createdRestriction = await this.restrictionService.createUserRestriction(
+            savedUser,
+            dietary_restrictions,
+          );
+          await queryRunner.manager.save(createdRestriction);
+        }
 
         return savedUser;
       },
@@ -96,16 +99,13 @@ export class UserService {
   async findUserById(uid: string, relations: string[] = []) {
     const cachedUser = await this.cacheService.getCache<User>(uid);
     if (cachedUser) return cachedUser;
-
     const user = await this.userRepository.findOne({
       where: { uid },
       relations,
     });
-
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
     await this.cacheService.setCache(uid, user, 3600);
     return user;
   }

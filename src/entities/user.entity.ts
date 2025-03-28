@@ -1,43 +1,39 @@
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { LocalAccount } from './local-account.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { Address } from './address.entity';
-import { Coin } from './coin.entity';
-import { CoinTransaction } from './coin-transaction.entity';
+import { UserActivityLevel } from 'src/common/enums/user-activity-level.enum';
+import { UserGender } from 'src/common/enums/user-gender.enum';
+import { UserRestriction } from './user-restriction.entity';
 
 @Entity()
+@Index('user_username_unique', ['username'], { unique: true })
 export class User extends BaseEntity {
-  @Column({ unique: true })
+  @Column()
   username: string;
 
   @Column()
-  name: string;
+  nickname: string;
 
-  @Column()
-  age: number;
+  @Column({ type: 'float', default: 0 })
+  weight: number;
 
-  @Column()
-  gender: boolean;
+  @Column({ type: 'float', default: 0 })
+  height: number;
 
   @Column({ type: 'date', nullable: true })
-  birth: Date;
+  birth_date: Date;
+
+  @Column({ type: 'enum', enum: UserGender, default: UserGender.MALE })
+  gender: UserGender;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
-  @Column({ default: false })
-  profileCompleted: boolean;
-
-  @Column({ default: true })
-  isActive: boolean;
-
-  @Column({ nullable: true })
-  phone: string;
-
-  @Column({ default: 'default-icon' })
-  profileImage?: string;
+  @Column({ type: 'enum', enum: UserActivityLevel })
+  activity_level: UserActivityLevel;
 
   @OneToOne(() => LocalAccount, (localAccount) => localAccount.user, { cascade: true })
   localAccount: LocalAccount;
@@ -48,9 +44,6 @@ export class User extends BaseEntity {
   @OneToMany(() => Address, (address) => address.user, { cascade: true })
   addresses: Address;
 
-  @OneToOne(() => Coin, (coin) => coin.user, { cascade: true })
-  coin: Coin;
-
-  @OneToMany(() => CoinTransaction, (coinTransaction) => coinTransaction.user, { cascade: true })
-  coinTransactions: CoinTransaction;
+  @OneToMany(() => UserRestriction, (userRestriction) => userRestriction.user, { cascade: true })
+  userRestrictions: UserRestriction;
 }
