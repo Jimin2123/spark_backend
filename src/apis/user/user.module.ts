@@ -12,5 +12,6 @@ import { RestrictionModule } from '../restriction/restriction.module';
   imports: [TypeOrmModule.forFeature([User, LocalAccount, Address]), AuthModule, RestrictionModule],
   controllers: [UserController],
   providers: [UserService],
+  exports: [UserService],
 })
 export class UserModule {}
