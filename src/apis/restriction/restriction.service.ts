@@ -42,7 +42,7 @@ export class RestrictionService {
   }
 
   /**
-   * 식이 제한을 업데트 합니다.
+   * 식이 제한을 업데이트 합니다.
    * @param uid
    * @param dto
    * @returns DietaryRestriction
