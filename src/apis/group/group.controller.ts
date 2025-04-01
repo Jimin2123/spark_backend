@@ -23,7 +23,7 @@ export class GroupController {
     return await this.groupService.createGroup(userid, CreateGroupDto);
   }
 
-  @Post('members:groupId')
+  @Post('members/:groupId')
   @SwaggerCreateGroupMembers()
   @UseGuards(JwtAuthGuard)
   async createGroupMembers(
