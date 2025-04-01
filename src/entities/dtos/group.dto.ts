@@ -8,6 +8,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { Purpose } from 'src/common/enums/purpose.enum';
@@ -38,6 +39,17 @@ export class CreateGroupMemberDto {
   @IsOptional()
   @IsBoolean()
   is_vegetarian?: boolean;
+
+  @ApiProperty({
+    description: '음식 제약 사항 ID 배열',
+    example: ['uuid-1234', 'uuid-5678'],
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  restrictions?: string[];
 }
 
 export class CreateGroupDto {

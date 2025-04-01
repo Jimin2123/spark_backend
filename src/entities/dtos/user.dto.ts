@@ -82,5 +82,5 @@ export class CreateUserDto {
   @IsArray()
   @IsUUID('4', { each: true })
   @IsOptional()
-  dietary_restrictions?: string[];
+  restrictions?: string[];
 }

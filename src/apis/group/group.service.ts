@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateGroupDto } from 'src/entities/dtos/group.dto';
+import { CreateGroupDto, CreateGroupMemberDto } from 'src/entities/dtos/group.dto';
 import { GroupMemberPreset } from 'src/entities/group-member-preset.entity';
 import { Group } from 'src/entities/group.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
+import { GroupMemberRestriction } from 'src/entities/group-member-restiction.entity';
+import { RestrictionService } from '../restriction/restriction.service';
 
 @Injectable()
 export class GroupService {
@@ -13,7 +15,10 @@ export class GroupService {
     private readonly groupRepository: Repository<Group>,
     @InjectRepository(GroupMemberPreset)
     private readonly groupMemberPresetRepository: Repository<GroupMemberPreset>,
+    @InjectRepository(GroupMemberRestriction)
+    private readonly groupMemberRestrictionRepository: Repository<GroupMemberRestriction>,
     private readonly userService: UserService,
+    private readonly restrictionService: RestrictionService,
   ) {}
 
   async createGroup(userid: string, CreateGroupDto: CreateGroupDto) {
@@ -28,10 +33,41 @@ export class GroupService {
     const createdGroup = this.groupRepository.create({
       ...groupData,
       creator,
-      members,
     });
 
-    return await this.groupRepository.save(createdGroup);
+    const savedGroup = await this.groupRepository.save(createdGroup);
+
+    const createdGroupMembers = await this.createGroupMembers(members, createdGroup.uid);
+    createdGroup.members = createdGroupMembers;
+
+    return savedGroup;
+  }
+
+  async createGroupMembers(createGroupMemberPresetDtos: CreateGroupMemberDto[], groupId: string) {
+    const groupMemberPresets = createGroupMemberPresetDtos.map((memberDto) => {
+      const { restrictions, ...rest } = memberDto;
+      return this.groupMemberPresetRepository.create({
+        ...rest,
+        group: { uid: groupId },
+      });
+    });
+
+    const savedMembers = await this.groupMemberPresetRepository.save(groupMemberPresets);
+
+    for (let i = 0; i < savedMembers.length; i++) {
+      const restrictions = createGroupMemberPresetDtos[i].restrictions;
+      const member = savedMembers[i];
+
+      if (restrictions && restrictions.length > 0) {
+        const groupMemberRestrictions = await this.restrictionService.createGroupMemberRestriction(
+          member,
+          restrictions,
+        );
+        await this.groupMemberRestrictionRepository.save(groupMemberRestrictions);
+      }
+    }
+
+    return savedMembers;
   }
 
   async getGroup(userid: string, groupId: string) {
