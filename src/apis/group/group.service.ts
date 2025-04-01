@@ -43,7 +43,14 @@ export class GroupService {
     return savedGroup;
   }
 
-  async createGroupMembers(createGroupMemberPresetDtos: CreateGroupMemberDto[], groupId: string) {
+  async createGroupMembers(createGroupMemberPresetDtos: CreateGroupMemberDto[], groupId: string, userId?: string) {
+    if (userId) {
+      const group = await this.getGroup(userId, groupId);
+      if (!group) {
+        throw new NotFoundException('생성한 그룹이 없거나 권한이 없습니다.');
+      }
+    }
+
     const groupMemberPresets = createGroupMemberPresetDtos.map((memberDto) => {
       const { restrictions, ...rest } = memberDto;
       return this.groupMemberPresetRepository.create({
@@ -70,10 +77,10 @@ export class GroupService {
     return savedMembers;
   }
 
-  async getGroup(userid: string, groupId: string) {
+  async getGroup(userid: string, groupId: string, relations: string[] = []) {
     const group = await this.groupRepository.findOne({
       where: { uid: groupId, creator: { uid: userid } },
-      relations: ['members', 'creator'],
+      relations: ['members', 'creator', ...relations],
     });
 
     if (!group) {
