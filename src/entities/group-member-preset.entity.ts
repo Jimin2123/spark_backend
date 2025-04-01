@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserGender } from 'src/common/enums/user-gender.enum';
 import { Group } from './group.entity';
+import { GroupMemberRestriction } from './group-member-restiction.entity';
 
 @Entity()
 export class GroupMemberPreset extends BaseEntity {
@@ -19,6 +20,9 @@ export class GroupMemberPreset extends BaseEntity {
 
   @Column({ type: 'boolean', default: false })
   is_vegetarian: boolean;
+
+  @OneToMany(() => GroupMemberRestriction, (groupMemberRestriction) => groupMemberRestriction.member, { cascade: true })
+  restrictions: GroupMemberRestriction[];
 
   @ManyToOne(() => Group, (group) => group.members, { onDelete: 'CASCADE' })
   group: Group;
