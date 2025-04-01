@@ -4,7 +4,12 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateGroupDto, CreateGroupMemberDto } from 'src/entities/dtos/group.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { SwaggerCreateGroupMembers } from 'src/common/docs/group.swagger';
+import {
+  SwaggerCreateGroup,
+  SwaggerCreateGroupMembers,
+  SwaggerGetGroup,
+  SwaggerGetGroups,
+} from 'src/common/docs/group.swagger';
 
 @Controller('group')
 @ApiBearerAuth()
@@ -12,6 +17,7 @@ export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post()
+  @SwaggerCreateGroup()
   @UseGuards(JwtAuthGuard)
   async createGroup(@Body() CreateGroupDto: CreateGroupDto, @CurrentUser() userid: string) {
     return await this.groupService.createGroup(userid, CreateGroupDto);
@@ -29,12 +35,14 @@ export class GroupController {
   }
 
   @Get('list')
+  @SwaggerGetGroups()
   @UseGuards(JwtAuthGuard)
   async getGroups(@CurrentUser() userid: string) {
     return await this.groupService.getGroups(userid);
   }
 
   @Get(':id')
+  @SwaggerGetGroup()
   @UseGuards(JwtAuthGuard)
   async getGroup(@Param('id') id: string, @CurrentUser() userid: string) {
     return await this.groupService.getGroup(userid, id, ['members.restrictions', 'members.restrictions.restriction']);
