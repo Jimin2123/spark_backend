@@ -5,15 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Group } from 'src/entities/group.entity';
 import { GroupMemberPreset } from 'src/entities/group-member-preset.entity';
 import { UserModule } from '../user/user.module';
-import { GroupMemberRestriction } from 'src/entities/group-member-restiction.entity';
 import { RestrictionModule } from '../restriction/restriction.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Group, GroupMemberPreset, GroupMemberRestriction]),
-    UserModule,
-    RestrictionModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Group, GroupMemberPreset]), UserModule, RestrictionModule],
   controllers: [GroupController],
   providers: [GroupService],
   exports: [GroupService],
