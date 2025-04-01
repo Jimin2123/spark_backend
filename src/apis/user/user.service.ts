@@ -32,7 +32,7 @@ export class UserService {
    * @returns
    */
   async createUser(createUserDto: CreateUserDto) {
-    const { email, username, password, dietary_restrictions } = createUserDto;
+    const { email, username, password, restrictions } = createUserDto;
 
     const existingEmail = await this.localAccountRepository.findOne({
       where: { email },
@@ -71,11 +71,8 @@ export class UserService {
         await queryRunner.manager.save(createdAddress);
 
         // 음식 제약사항 생성
-        if (dietary_restrictions && dietary_restrictions.length > 0) {
-          const createdRestriction = await this.restrictionService.createUserRestriction(
-            savedUser,
-            dietary_restrictions,
-          );
+        if (restrictions && restrictions.length > 0) {
+          const createdRestriction = await this.restrictionService.createUserRestriction(savedUser, restrictions);
           await queryRunner.manager.save(createdRestriction);
         }
 

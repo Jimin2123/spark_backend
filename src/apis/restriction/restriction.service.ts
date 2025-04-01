@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DietaryRestriction } from 'src/entities/dietary-restriction.entity';
 import { CreateDietaryRestrictionDto, UpdateDietaryRestrictionDto } from 'src/entities/dtos/restriction.dto';
+import { GroupMemberPreset } from 'src/entities/group-member-preset.entity';
+import { GroupMemberRestriction } from 'src/entities/group-member-restiction.entity';
 import { UserRestriction } from 'src/entities/user-restriction.entity';
 import { User } from 'src/entities/user.entity';
 import { In, Repository } from 'typeorm';
@@ -13,6 +15,8 @@ export class RestrictionService {
     private readonly dietaryRestrictionRepository: Repository<DietaryRestriction>,
     @InjectRepository(UserRestriction)
     private readonly userRestrictionRepository: Repository<UserRestriction>,
+    @InjectRepository(GroupMemberRestriction)
+    private readonly groupMemberRestrictionRepository: Repository<GroupMemberRestriction>,
   ) {}
 
   /**
@@ -72,12 +76,31 @@ export class RestrictionService {
    * @param dietary_restrictions
    * @returns
    */
-  async createUserRestriction(user: User, dietary_restrictions: string[]): Promise<UserRestriction[]> {
-    const dietaryRestrictions = await this.getDietaryRestrictionByIds(dietary_restrictions);
-    return dietaryRestrictions.map((dietaryRestriction) =>
+  async createUserRestriction(user: User, restrictions: string[]): Promise<UserRestriction[]> {
+    const dietaryRestrictions = await this.getDietaryRestrictionByIds(restrictions);
+    return dietaryRestrictions.map((restriction) =>
       this.userRestrictionRepository.create({
         user,
-        dietaryRestriction,
+        restriction,
+      }),
+    );
+  }
+
+  /**
+   * 그룹 멤버의 식이 제한을 생성합니다.
+   * @param groupMember
+   * @param restrictions
+   * @returns
+   */
+  async createGroupMemberRestriction(
+    groupMember: GroupMemberPreset,
+    restrictions: string[],
+  ): Promise<GroupMemberRestriction[]> {
+    const dietaryRestrictions = await this.getDietaryRestrictionByIds(restrictions);
+    return dietaryRestrictions.map((restriction) =>
+      this.groupMemberRestrictionRepository.create({
+        member: groupMember,
+        restriction,
       }),
     );
   }

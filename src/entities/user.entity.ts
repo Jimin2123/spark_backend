@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { LocalAccount } from './local-account.entity';
@@ -7,6 +7,7 @@ import { Address } from './address.entity';
 import { UserActivityLevel } from 'src/common/enums/user-activity-level.enum';
 import { UserGender } from 'src/common/enums/user-gender.enum';
 import { UserRestriction } from './user-restriction.entity';
+import { Group } from './group.entity';
 
 @Entity()
 @Index('user_username_unique', ['username'], { unique: true })
@@ -46,4 +47,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserRestriction, (userRestriction) => userRestriction.user, { cascade: true })
   userRestrictions: UserRestriction;
+
+  @OneToMany(() => Group, (group) => group.creator, { cascade: true })
+  createdGroups: Group;
 }
